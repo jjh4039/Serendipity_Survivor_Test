@@ -8,6 +8,14 @@ public class Weapon : MonoBehaviour
     public int count;
     public float speed;
 
+    float timer;
+    Player player;
+
+    void Awake()
+    {
+        player = GetComponentInParent<Player>();
+    }
+
     void Start()
     {
         Init();
@@ -21,7 +29,13 @@ public class Weapon : MonoBehaviour
                 transform.Rotate(Vector3.back * speed * Time.deltaTime);
                 break;
             default:
+                timer += Time.deltaTime;
 
+                if (timer > speed)
+                {
+                    timer = 0f;
+                    Fire();
+                }
                 break;
         }
 
@@ -50,7 +64,8 @@ public class Weapon : MonoBehaviour
                 Batch();
                 break;
             default:
-
+                speed = 0.3f;
+                Debug.Log("Weapon Init");
                 break;
         }
     }
@@ -80,5 +95,14 @@ public class Weapon : MonoBehaviour
             bullet.Translate(bullet.up * 1.5f, Space.World);
             bullet.GetComponent<Bullet>().Init(damage, -1); // -1 is Infinity Per.
         }
+    }
+
+    void Fire()
+    {
+        if (!player.scanner.nearestTarget)
+            return;
+
+        Transform bullet = GameManager.instance.pool.Get(prefabId).transform;
+        bullet.position = transform.position;
     }
 }
